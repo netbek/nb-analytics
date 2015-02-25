@@ -17,7 +17,9 @@
 	function nbAnalyticsConfig () {
 		var config = {
 			trackingId: undefined, // {String} Tracking ID. This is a required parameter. UA-xxxxxxxx-x
-			create: undefined // {String|Object} https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#create
+			create: undefined, // {String|Object} https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#create
+			prependPageViewUrl: false, // {Boolean|String} Base path prepended to tracking URLs. Set to TRUE to auto-detect base path, FALSE not to prepend, or a string path.
+			excludePageView: [] // {Array} String or RegExp that should not be tracked.
 		};
 		return {
 			set: function (values) {
@@ -29,8 +31,8 @@
 		};
 	}
 
-	nbAnalytics.$inject = ['$rootScope', '$window', '$q', '$timeout', '$interval', 'nbAnalyticsConfig'];
-	function nbAnalytics ($rootScope, $window, $q, $timeout, $interval, nbAnalyticsConfig) {
+	nbAnalytics.$inject = ['$rootScope', '$window', '$location', '$q', '$timeout', '$interval', 'nbAnalyticsConfig', '_'];
+	function nbAnalytics ($rootScope, $window, $location, $q, $timeout, $interval, nbAnalyticsConfig, _) {
 		/* jshint validthis: true */
 		var self = this;
 		var flags = {
@@ -38,6 +40,27 @@
 			ready: false
 		};
 		var deferredInit;
+		var prependPageViewUrl = ''; // {String} Base path prepended to tracking URLs.
+
+		if (nbAnalyticsConfig.prependPageViewUrl === true) {
+			// Find base path. Example: if $location.absUrl() is
+			// http://example.com/path/to/#!/app/ then base path is /path/to
+			var absUrl = $location.absUrl();
+			var offset = ($location.protocol() + '://').length;
+			offset = absUrl.indexOf('/', offset);
+
+			prependPageViewUrl = absUrl.slice(offset);
+			offset = prependPageViewUrl.indexOf('#');
+
+			if (offset > -1) {
+				prependPageViewUrl = prependPageViewUrl.slice(0, offset);
+			}
+
+			prependPageViewUrl = _.trimRight(prependPageViewUrl, '/');
+		}
+		else if (nbAnalyticsConfig.prependPageViewUrl !== false) {
+			prependPageViewUrl = '' + nbAnalyticsConfig.prependPageViewUrl;
+		}
 
 		/**
 		 *
@@ -88,11 +111,30 @@
 		 * @param {String} url
 		 */
 		this.trackPageView = function (url) {
-			this.init()
-				.then(function () {
-					window.ga('set', 'page', url);
-					window.ga('send', 'pageview', url);
-				});
+			var exclude = false;
+
+			_.forEach(nbAnalyticsConfig.excludePageView, function (pattern) {
+				if (_.isString(pattern)) {
+					if (pattern === url) {
+						exclude = true;
+						return false;
+					}
+				}
+				else if (_.isRegExp(pattern)) {
+					if (pattern.test(url)) {
+						exclude = true;
+						return false;
+					}
+				}
+			});
+
+			if (!exclude) {
+				this.init()
+					.then(function () {
+						window.ga('set', 'page', prependPageViewUrl + url);
+						window.ga('send', 'pageview', prependPageViewUrl + url);
+					});
+			}
 		};
 
 		/**
