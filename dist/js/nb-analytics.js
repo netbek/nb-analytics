@@ -115,13 +115,13 @@
 		 *
 		 * @param {String} network 'facebook'
 		 * @param {String} action 'like'
-		 * @param {String} targetUrl
+		 * @param {String} url
 		 * @param {Object} value Optional. {'page': ''}
 		 */
-		this.trackSocial = function (network, action, targetUrl, value) {
+		this.trackSocial = function (network, action, url, value) {
 			this.init()
 				.then(function () {
-					window.ga('send', 'social', network, action, targetUrl, value);
+					window.ga('send', 'social', network, action, url, value);
 				});
 		};
 	}
