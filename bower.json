@@ -17,7 +17,8 @@
 		"node_modules",
 		"test",
 		"tests",
-		"vendor"
+		"vendor",
+		"src"
 	],
 	"devDependencies": {
 		"angularjs": "1.2.x",
