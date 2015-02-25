@@ -25,6 +25,7 @@
 		"angular-mocks": "1.2.x"
 	},
 	"dependencies": {
-		"angularjs": "1.2.x"
+		"angularjs": "1.2.x",
+		"nb-lodash": "https://github.com/netbek/nb-lodash.git#master"
 	}
 }
