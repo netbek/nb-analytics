@@ -16,7 +16,6 @@
 
 	function nbAnalyticsConfig () {
 		var config = {
-//			prependPageViewUrl: '', // {String} String to prepend to page view URL. Used if app is in a subdirectory.
 			trackingId: undefined, // {String} Tracking ID. This is a required parameter. UA-xxxxxxxx-x
 			create: undefined // {String|Object} https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#create
 		};
