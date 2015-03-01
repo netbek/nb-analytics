@@ -74,31 +74,37 @@
 
 				deferredInit = $q.defer();
 
-				var interval = $interval(function () {
-					if (window.ga) {
-						$interval.cancel(interval);
+				if (nbAnalyticsConfig.trackingId) {
+					var interval = $interval(function () {
+						if (window.ga) {
+							$interval.cancel(interval);
 
-						window.ga('create', nbAnalyticsConfig.trackingId, angular.isDefined(nbAnalyticsConfig.create) ? nbAnalyticsConfig.create : 'auto');
+							window.ga('create', nbAnalyticsConfig.trackingId, angular.isDefined(nbAnalyticsConfig.create) ? nbAnalyticsConfig.create : 'auto');
 
-						flags.ready = true;
-						deferredInit.resolve(window.ga);
+							flags.ready = true;
+							deferredInit.resolve(window.ga);
+						}
+					}, 100);
+
+					// Inject SDK script element.
+					var id = 'ga-js';
+					var js = document.getElementById(id);
+					if (js) {
+						// @todo If there's already a script with this ID...
 					}
-				}, 100);
-
-				// Inject SDK script element.
-				var id = 'ga-js';
-				var js = document.getElementById(id);
-				if (js) {
-					// @todo If there's already a script with this ID...
+					else {
+						var src = '//www.google-analytics.com/analytics.js';
+						js = document.createElement('script');
+						js.id = id;
+						js.async = true;
+						js.src = src;
+						var gajs = document.getElementsByTagName('script')[0];
+						gajs.parentNode.insertBefore(js, gajs);
+					}
 				}
 				else {
-					var src = '//www.google-analytics.com/analytics.js';
-					js = document.createElement('script');
-					js.id = id;
-					js.async = true;
-					js.src = src;
-					var gajs = document.getElementsByTagName('script')[0];
-					gajs.parentNode.insertBefore(js, gajs);
+					flags.ready = false;
+					deferredInit.reject('Tracking ID not given');
 				}
 			}
 
